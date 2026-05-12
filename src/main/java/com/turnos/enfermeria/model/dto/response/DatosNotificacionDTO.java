@@ -1,0 +1,16 @@
+package com.turnos.enfermeria.model.dto.response;
+
+import lombok.Data;
+import java.util.List;
+
+@Data
+public class DatosNotificacionDTO {
+    private CuadroTurnoDTO cuadroData;
+    private List<MiembroPerfilDTO> miembros;
+    private List<TurnoDTO> turnos;
+    private List<CambioCuadroDTO> historialCuadro;
+    private List<CambioTurnoDTO> historialTurnos;
+    private List<ProcesoDTO> procesos;
+    private List<CambiosEquipoDTO> historialEquipos;
+    private List<CambiosPersonaEquipoDTO> historialPersonasEquipo;
+}
