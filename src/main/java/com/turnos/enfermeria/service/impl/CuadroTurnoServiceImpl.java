@@ -434,6 +434,8 @@ public class CuadroTurnoServiceImpl implements CuadroTurnoService {
             cuadroTurno.setCategoria(request.getCategoria().toLowerCase());
             cuadroTurno.setEstado(request.getEstado() != null ? request.getEstado() : true);
             cuadroTurno.setEquipos(equipo);
+            cuadroTurno.setEntidad(request.getEntidad());
+            cuadroTurno.setTipoPersonal(request.getTipoPersonal());
 
             // AGREGAR OBSERVACIONES
             cuadroTurno.setObservaciones(request.getObservaciones());
@@ -792,17 +794,26 @@ public class CuadroTurnoServiceImpl implements CuadroTurnoService {
      * Formato: CT_{consecutivo}_{Categoria}_{Identificador}_{Equipo}
      */
     private String generarNombreCuadroTurno(CuadroTurno cuadroTurno) {
-        StringBuilder nombreBaseBuilder = new StringBuilder(); // sin "CT_"
+        StringBuilder nombreBaseBuilder = new StringBuilder();
 
-        // Determinar la categoría principal
+        String entidad = "";
+        if (cuadroTurno.getEntidad() != null && !cuadroTurno.getEntidad().isBlank()) {
+            entidad = limpiarNombreParaId(cuadroTurno.getEntidad()) + "_";
+        }
+        nombreBaseBuilder.append(entidad);
+
+        String tipoPersonal = "";
+        if (cuadroTurno.getTipoPersonal() != null && !cuadroTurno.getTipoPersonal().isBlank()) {
+            tipoPersonal = limpiarNombreParaId(cuadroTurno.getTipoPersonal()) + "_";
+        }
+        nombreBaseBuilder.append(tipoPersonal);
+
         String categoria = determinarCategoriaPrincipal(cuadroTurno);
         nombreBaseBuilder.append(categoria).append("_");
 
-        // Agregar identificador específico
         String identificador = obtenerIdentificadorEspecifico(cuadroTurno, categoria);
         nombreBaseBuilder.append(identificador);
 
-        // Agregar equipo si está disponible
         if (cuadroTurno.getEquipos() != null) {
             String equipoNombre = limpiarNombreParaId(cuadroTurno.getEquipos().getNombre());
             nombreBaseBuilder.append("_").append(equipoNombre);
@@ -810,19 +821,15 @@ public class CuadroTurnoServiceImpl implements CuadroTurnoService {
 
         String nombreBase = nombreBaseBuilder.toString();
 
-        // Obtener mes actual (1–12)
         int mesActual = LocalDate.now().getMonthValue();
         String mesStr = String.format("%02d", mesActual);
 
-        // Buscar nombres similares que empiecen con el mismo mes
         List<String> nombresSimilares = cuadroTurnoRepository.findNombresByBase(nombreBase);
 
-        // Contar cuántos cuadros ya existen este mes con ese nombre base
         long count = nombresSimilares.stream()
                 .filter(nombre -> nombre.startsWith("CT_" + mesStr + "_"))
                 .count();
 
-        // Generar nombre final con el formato: CT_MM_nombreBase__##
         return String.format("CT_%s_%s__%02d", mesStr, nombreBase, count + 1);
     }
 

@@ -167,7 +167,16 @@ public class EquipoServiceImpl implements EquipoService {
                 .replaceAll("\\s+", "_")
                 .replaceAll("[^A-Z0-9_]", "");
 
-        String baseNombre = "EQUIPO_" + categoria + "_" + subcategoria;
+        String entidad = "";
+        if (selection.getEntidad() != null && !selection.getEntidad().isBlank()) {
+            entidad = "_" + Normalizer.normalize(selection.getEntidad(), Normalizer.Form.NFD)
+                    .replaceAll("\\p{InCombiningDiacriticalMarks}", "")
+                    .toUpperCase()
+                    .replaceAll("\\s+", "_")
+                    .replaceAll("[^A-Z0-9_]", "");
+        }
+
+        String baseNombre = "EQUIPO_" + categoria + "_" + subcategoria + entidad;
         Long conteo = equipoRepository.countByNombreStartingWith(baseNombre);
         String consecutivo = String.format("_%02d", conteo + 1);
 

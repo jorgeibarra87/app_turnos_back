@@ -26,6 +26,8 @@ public class CuadroTurnoDTO {
     private String version; // Ejemplo: "v01_0225"
     private Boolean turnoExcepcion = false;
     private String categoria;
+    private String entidad;
+    private String tipoPersonal;
     private Boolean estado = true;
     private String nombreEquipo;
     private String nombreProceso;

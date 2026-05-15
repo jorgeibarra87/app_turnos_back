@@ -11,5 +11,6 @@ import lombok.NoArgsConstructor;
 public class EquipoSelectionDTO {
     private String categoria;
     private String subcategoria;
+    private String entidad;
     private String observaciones;
 }

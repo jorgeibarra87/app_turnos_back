@@ -46,8 +46,10 @@ public interface TurnosRepository extends JpaRepository<Turnos, Long>, JpaSpecif
      */
     List<Turnos> findByCuadroTurno_IdCuadroTurno(Long idCuadroTurno);
 
+    List<Turnos> findByCuadroTurno_IdCuadroTurnoAndEstado(Long idCuadroTurno, Boolean estado);
+
     /**
-     * Encuentra turnos por cuadro de turno y estado.
+     * Encuentra turnos por cuadro de turno y estado de turno.
      */
     List<Turnos> findByCuadroTurno_IdCuadroTurnoAndEstadoTurno(Long idCuadroTurno, String estadoTurno);
 

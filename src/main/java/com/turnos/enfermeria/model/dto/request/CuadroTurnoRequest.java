@@ -28,6 +28,8 @@ public class CuadroTurnoRequest {
     private String mes;
     private Boolean turnoExcepcion = false;
     private String categoria;
+    private String entidad;
+    private String tipoPersonal;
     private Boolean estado = true;
     private String estadoCuadro = "abierto";
     private String version;

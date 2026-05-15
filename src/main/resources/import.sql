@@ -73,6 +73,19 @@ INSERT INTO public.titulos_formacion_academica (id_titulo, titulo, id_tipo_forma
 INSERT INTO public.titulos_formacion_academica (id_titulo, titulo, id_tipo_formacion_academica, estado) VALUES (7, 'CIRUGÍA GENERAL', 1, true);
 INSERT INTO public.titulos_formacion_academica (id_titulo, titulo, id_tipo_formacion_academica, estado) VALUES (8, 'CIRUGÍA LAPAROSCÓPICA', 1, true);
 
-
-
+-- Catálogo de tipo_jornada (códigos de turno para la matriz mensual)
+INSERT INTO public.tipo_jornada (codigo, nombre, hora_inicio, hora_fin, es_descanso, es_trabajo, color, orden, estado) VALUES ('M', 'Mañana', '06:00', '14:00', false, true, '#FEF08A', 1, true);
+INSERT INTO public.tipo_jornada (codigo, nombre, hora_inicio, hora_fin, es_descanso, es_trabajo, color, orden, estado) VALUES ('T', 'Tarde', '14:00', '22:00', false, true, '#BBF7D0', 2, true);
+INSERT INTO public.tipo_jornada (codigo, nombre, hora_inicio, hora_fin, es_descanso, es_trabajo, color, orden, estado) VALUES ('N', 'Noche', '22:00', '06:00', false, true, '#BFDBFE', 3, true);
+INSERT INTO public.tipo_jornada (codigo, nombre, hora_inicio, hora_fin, es_descanso, es_trabajo, color, orden, estado) VALUES ('D', 'Diurno', '07:00', '17:00', false, true, '#FED7AA', 4, true);
+INSERT INTO public.tipo_jornada (codigo, nombre, hora_inicio, hora_fin, es_descanso, es_trabajo, color, orden, estado) VALUES ('L', 'Libre', NULL, NULL, true, false, '#E5E7EB', 5, true);
+INSERT INTO public.tipo_jornada (codigo, nombre, hora_inicio, hora_fin, es_descanso, es_trabajo, color, orden, estado) VALUES ('C', 'Compensatorio', NULL, NULL, true, false, '#D8B4FE', 6, true);
+INSERT INTO public.tipo_jornada (codigo, nombre, hora_inicio, hora_fin, es_descanso, es_trabajo, color, orden, estado) VALUES ('7A3', '7am a 3pm', '07:00', '15:00', false, true, '#A7F3D0', 7, true);
+INSERT INTO public.tipo_jornada (codigo, nombre, hora_inicio, hora_fin, es_descanso, es_trabajo, color, orden, estado) VALUES ('8A4', '8am a 4pm', '08:00', '16:00', false, true, '#99F6E4', 8, true);
+INSERT INTO public.tipo_jornada (codigo, nombre, hora_inicio, hora_fin, es_descanso, es_trabajo, color, orden, estado) VALUES ('7A1', '7am a 1pm', '07:00', '13:00', false, true, '#E0F2FE', 9, true);
+INSERT INTO public.tipo_jornada (codigo, nombre, hora_inicio, hora_fin, es_descanso, es_trabajo, color, orden, estado) VALUES ('6A2', '6am a 2pm', '06:00', '14:00', false, true, '#FCE7F3', 10, true);
+INSERT INTO public.tipo_jornada (codigo, nombre, hora_inicio, hora_fin, es_descanso, es_trabajo, color, orden, estado) VALUES ('PS', 'Permiso Sindical', NULL, NULL, true, false, '#FECACA', 11, true);
+INSERT INTO public.tipo_jornada (codigo, nombre, hora_inicio, hora_fin, es_descanso, es_trabajo, color, orden, estado) VALUES ('V', 'Vacaciones', NULL, NULL, true, false, '#FDE68A', 12, true);
+INSERT INTO public.tipo_jornada (codigo, nombre, hora_inicio, hora_fin, es_descanso, es_trabajo, color, orden, estado) VALUES ('I', 'Incapacidad', NULL, NULL, true, false, '#FCA5A5', 13, true);
+INSERT INTO public.tipo_jornada (codigo, nombre, hora_inicio, hora_fin, es_descanso, es_trabajo, color, orden, estado) VALUES ('OFF', 'Libre (Descanso)', NULL, NULL, true, false, '#E5E7EB', 14, true);
 

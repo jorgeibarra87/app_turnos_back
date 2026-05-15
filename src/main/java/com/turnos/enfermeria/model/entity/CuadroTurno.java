@@ -72,6 +72,12 @@ public class CuadroTurno {
     @Column(name = "estado_cuadro")
     private String estadoCuadro = "abierto";
 
+    @Column(name = "entidad", length = 100)
+    private String entidad;
+
+    @Column(name = "tipo_personal", length = 50)
+    private String tipoPersonal;
+
     //v01_0225
     @Column(name = "version")
     private String version;
