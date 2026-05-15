@@ -65,6 +65,7 @@ public class FullImportServiceImpl implements FullImportService {
         List<ProgramacionDiariaRequest.CeldaMatriz> celdas = new ArrayList<>();
         List<Long> personaIds = new ArrayList<>();
         String servicioDesdeExcel = null;
+        Set<String> serviciosUnicos = new HashSet<>();
 
         try (InputStream is = file.getInputStream(); Workbook workbook = new XSSFWorkbook(is)) {
             Sheet sheet = workbook.getSheetAt(0);
@@ -119,8 +120,10 @@ public class FullImportServiceImpl implements FullImportService {
                 String perfil = perfilCol >= 0 ? getCellValueAsString(row.getCell(perfilCol)) : null;
                 String servicio = servicioCol >= 0 ? getCellValueAsString(row.getCell(servicioCol)) : null;
 
-                if (servicioDesdeExcel == null && servicio != null && !servicio.trim().isEmpty()) {
-                    servicioDesdeExcel = servicio.trim();
+                if (servicio != null && !servicio.trim().isEmpty()) {
+                    String sv = servicio.trim();
+                    if (servicioDesdeExcel == null) servicioDesdeExcel = sv;
+                    serviciosUnicos.add(sv.toUpperCase());
                 }
 
                 if (documento == null || documento.trim().isEmpty()) {
@@ -198,7 +201,8 @@ public class FullImportServiceImpl implements FullImportService {
 
         Long equipoFinalId = idEquipo;
         if (equipoFinalId == null) {
-            String subcategoria = servicioDesdeExcel != null ? servicioDesdeExcel : "GENERAL";
+            String subcategoria = serviciosUnicos.size() > 1 ? "MULTIPROCESO" :
+                    (servicioDesdeExcel != null ? servicioDesdeExcel : "GENERAL");
             String categoriaEq = categoria != null && !categoria.isBlank()
                     ? categoria.substring(0, 1).toUpperCase() + categoria.substring(1).toLowerCase()
                     : "Servicio";
@@ -257,6 +261,21 @@ public class FullImportServiceImpl implements FullImportService {
         }
 
         String categoriaCuadro = categoria != null ? categoria.toLowerCase() : "servicio";
+        List<Long> idsProcesosAtencion = new ArrayList<>();
+
+        if (serviciosUnicos.size() > 1) {
+            categoriaCuadro = "multiproceso";
+            for (String sv : serviciosUnicos) {
+                List<Procesos> encontrados = procesosRepository.findByNombreContainingIgnoreCase(sv);
+                if (!encontrados.isEmpty()) {
+                    idsProcesosAtencion.add(encontrados.get(0).getIdProceso());
+                    log.info("Multiproceso: '{}' → Proceso ID {}", sv, encontrados.get(0).getIdProceso());
+                } else {
+                    log.warn("Multiproceso: no se encontró proceso para '{}'", sv);
+                }
+            }
+        }
+
         CuadroTurnoRequest ctRequest = new CuadroTurnoRequest();
         ctRequest.setAnio(anio);
         ctRequest.setMes(mes);
@@ -267,11 +286,15 @@ public class FullImportServiceImpl implements FullImportService {
         ctRequest.setObservaciones(observaciones);
         ctRequest.setEstado(true);
 
-        if (idMacroproceso != null) ctRequest.setIdMacroproceso(idMacroproceso);
-        if (idProceso != null) ctRequest.setIdProceso(idProceso);
-        if (idServicio != null) ctRequest.setIdServicio(idServicio);
-        if (idSeccionServicio != null) ctRequest.setIdSeccionServicio(idSeccionServicio);
-        if (idSubseccionServicio != null) ctRequest.setIdSubseccionServicio(idSubseccionServicio);
+        if ("multiproceso".equals(categoriaCuadro) && !idsProcesosAtencion.isEmpty()) {
+            ctRequest.setIdsProcesosAtencion(idsProcesosAtencion);
+        } else {
+            if (idMacroproceso != null) ctRequest.setIdMacroproceso(idMacroproceso);
+            if (idProceso != null) ctRequest.setIdProceso(idProceso);
+            if (idServicio != null) ctRequest.setIdServicio(idServicio);
+            if (idSeccionServicio != null) ctRequest.setIdSeccionServicio(idSeccionServicio);
+            if (idSubseccionServicio != null) ctRequest.setIdSubseccionServicio(idSubseccionServicio);
+        }
 
         CuadroTurnoDTO cuadroCreado = cuadroTurnoService.crearCuadroTurnoTotal(ctRequest);
 

@@ -796,27 +796,29 @@ public class CuadroTurnoServiceImpl implements CuadroTurnoService {
     private String generarNombreCuadroTurno(CuadroTurno cuadroTurno) {
         StringBuilder nombreBaseBuilder = new StringBuilder();
 
-        String entidad = "";
-        if (cuadroTurno.getEntidad() != null && !cuadroTurno.getEntidad().isBlank()) {
-            entidad = limpiarNombreParaId(cuadroTurno.getEntidad()) + "_";
-        }
-        nombreBaseBuilder.append(entidad);
-
-        String tipoPersonal = "";
-        if (cuadroTurno.getTipoPersonal() != null && !cuadroTurno.getTipoPersonal().isBlank()) {
-            tipoPersonal = limpiarNombreParaId(cuadroTurno.getTipoPersonal()) + "_";
-        }
-        nombreBaseBuilder.append(tipoPersonal);
-
         String categoria = determinarCategoriaPrincipal(cuadroTurno);
-        nombreBaseBuilder.append(categoria).append("_");
+        String abrev = categoria.length() > 4 ? categoria.substring(0, 4).toUpperCase() : categoria.toUpperCase();
+        nombreBaseBuilder.append(abrev).append("_");
 
         String identificador = obtenerIdentificadorEspecifico(cuadroTurno, categoria);
-        nombreBaseBuilder.append(identificador);
+        String idAbrev = identificador.length() > 15 ? identificador.substring(0, 15) : identificador;
+        nombreBaseBuilder.append(idAbrev);
 
         if (cuadroTurno.getEquipos() != null) {
-            String equipoNombre = limpiarNombreParaId(cuadroTurno.getEquipos().getNombre());
-            nombreBaseBuilder.append("_").append(equipoNombre);
+            String equipoName = limpiarNombreParaId(cuadroTurno.getEquipos().getNombre());
+            String[] parts = equipoName.split("_");
+            StringBuilder eqAbrev = new StringBuilder();
+            int maxLen = 0;
+            for (String p : parts) {
+                String ab = p.length() > 4 ? p.substring(0, 4) : p;
+                if (maxLen + ab.length() + 1 > 12) break;
+                if (eqAbrev.length() > 0) eqAbrev.append("_");
+                eqAbrev.append(ab);
+                maxLen += ab.length() + 1;
+            }
+            if (eqAbrev.length() > 0) {
+                nombreBaseBuilder.append("_").append(eqAbrev);
+            }
         }
 
         String nombreBase = nombreBaseBuilder.toString();
