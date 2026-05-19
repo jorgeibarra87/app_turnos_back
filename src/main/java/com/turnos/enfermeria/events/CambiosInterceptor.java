@@ -26,6 +26,10 @@ public class CambiosInterceptor {
 
     @EventListener
     public void manejarCambioTurno(CambioTurnoEvent evento) {
+        if (evento.getIdTurno() == null) {
+            log.warn("Evento de cambio de turno recibido con idTurno null, ignorando");
+            return;
+        }
         log.info("🔄 Detectado cambio en turno: {}", evento.getIdTurno());
 
         notificacionAutomaticaService.enviarNotificacionCambioTurno(

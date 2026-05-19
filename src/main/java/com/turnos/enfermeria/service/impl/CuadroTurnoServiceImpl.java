@@ -791,48 +791,49 @@ public class CuadroTurnoServiceImpl implements CuadroTurnoService {
 
     /**
      * Genera el nombre del cuadro de turno basado en la selección del usuario
-     * Formato: CT_{consecutivo}_{Categoria}_{Identificador}_{Equipo}
+     * Formato: CT-{MES}-{IDENTIFICADOR}-{ENTIDAD_ABREV}-{TIPOPERSONAL_ABREV}-{NRO}
      */
     private String generarNombreCuadroTurno(CuadroTurno cuadroTurno) {
-        StringBuilder nombreBaseBuilder = new StringBuilder();
-
         String categoria = determinarCategoriaPrincipal(cuadroTurno);
-        String abrev = categoria.length() > 4 ? categoria.substring(0, 4).toUpperCase() : categoria.toUpperCase();
-        nombreBaseBuilder.append(abrev).append("_");
-
         String identificador = obtenerIdentificadorEspecifico(cuadroTurno, categoria);
-        String idAbrev = identificador.length() > 15 ? identificador.substring(0, 15) : identificador;
-        nombreBaseBuilder.append(idAbrev);
+        String idClean = identificador.replace('_', '-');
+        if (idClean.length() > 15) idClean = idClean.substring(0, 15);
+        idClean = idClean.replaceAll("-+", "-").replaceAll("^-|-$", "");
 
-        if (cuadroTurno.getEquipos() != null) {
-            String equipoName = limpiarNombreParaId(cuadroTurno.getEquipos().getNombre());
-            String[] parts = equipoName.split("_");
-            StringBuilder eqAbrev = new StringBuilder();
-            int maxLen = 0;
-            for (String p : parts) {
-                String ab = p.length() > 4 ? p.substring(0, 4) : p;
-                if (maxLen + ab.length() + 1 > 12) break;
-                if (eqAbrev.length() > 0) eqAbrev.append("_");
-                eqAbrev.append(ab);
-                maxLen += ab.length() + 1;
-            }
-            if (eqAbrev.length() > 0) {
-                nombreBaseBuilder.append("_").append(eqAbrev);
-            }
-        }
+        String entidadAbrev = abreviarEntidad(cuadroTurno.getEntidad());
+        String tipoPersonalAbrev = abreviarTipoPersonal(cuadroTurno.getTipoPersonal());
 
-        String nombreBase = nombreBaseBuilder.toString();
+        String nombreBase = idClean + "-" + entidadAbrev + "-" + tipoPersonalAbrev;
 
-        int mesActual = LocalDate.now().getMonthValue();
-        String mesStr = String.format("%02d", mesActual);
+        String mesStr = cuadroTurno.getMes() != null
+                ? String.format("%02d", Integer.parseInt(cuadroTurno.getMes()))
+                : String.format("%02d", LocalDate.now().getMonthValue());
 
         List<String> nombresSimilares = cuadroTurnoRepository.findNombresByBase(nombreBase);
-
         long count = nombresSimilares.stream()
-                .filter(nombre -> nombre.startsWith("CT_" + mesStr + "_"))
+                .filter(n -> n.startsWith("CT-" + mesStr + "-"))
                 .count();
 
-        return String.format("CT_%s_%s__%02d", mesStr, nombreBase, count + 1);
+        return String.format("CT-%s-%s-%02d", mesStr, nombreBase, count + 1);
+    }
+
+    private String abreviarEntidad(String entidad) {
+        if (entidad == null || entidad.isBlank()) return "SINENT";
+        String limpia = entidad.toUpperCase().replaceAll("[^A-Z0-9]", "");
+        return limpia.length() > 6 ? limpia.substring(0, 6) : limpia;
+    }
+
+    private String abreviarTipoPersonal(String tipoPersonal) {
+        if (tipoPersonal == null || tipoPersonal.isBlank()) return "SINTIP";
+        return switch (tipoPersonal.toUpperCase()) {
+            case "ENFERMERO" -> "ENF";
+            case "AUXILIAR" -> "AUX";
+            case "MEDICO" -> "MED";
+            case "TERAPEUTA" -> "TER";
+            default -> tipoPersonal.length() > 3
+                    ? tipoPersonal.substring(0, 3).toUpperCase()
+                    : tipoPersonal.toUpperCase();
+        };
     }
 
     /**
@@ -870,7 +871,7 @@ public class CuadroTurnoServiceImpl implements CuadroTurnoService {
             case "Macroproceso":
                 return limpiarNombreParaId(cuadroTurno.getMacroProcesos().getNombre());
             default:
-                return "Procesos";
+                return "MULTI";
         }
     }
 

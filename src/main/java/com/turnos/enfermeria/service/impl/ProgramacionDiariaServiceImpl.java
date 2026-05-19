@@ -1,5 +1,6 @@
 package com.turnos.enfermeria.service.impl;
 
+import com.turnos.enfermeria.events.CambioCuadroEvent;
 import com.turnos.enfermeria.model.dto.request.ProgramacionDiariaRequest;
 import com.turnos.enfermeria.model.dto.response.MatrizMensualDTO;
 import com.turnos.enfermeria.model.dto.response.TurnoDTO;
@@ -9,6 +10,7 @@ import com.turnos.enfermeria.service.ProgramacionDiariaService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +32,7 @@ public class ProgramacionDiariaServiceImpl implements ProgramacionDiariaService 
     private final PersonaRepository personaRepository;
     private final TipoJornadaRepository tipoJornadaRepository;
     private final TurnosRepository turnosRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional(readOnly = true)
@@ -171,10 +174,23 @@ public class ProgramacionDiariaServiceImpl implements ProgramacionDiariaService 
             pd.setDiaMes(celda.getDiaMes());
             pd.setTipoJornada(tipoJornada);
             pd.setObservacion(celda.getObservacion());
-            programacionDiariaRepository.save(pd);
-        }
+        programacionDiariaRepository.save(pd);
+                            }
 
         generarTurnosDesdeMatriz(idCuadro);
+
+        try {
+            CambioCuadroEvent evento = new CambioCuadroEvent(
+                    idCuadro,
+                    "ACTUALIZACIÓN MATRIZ",
+                    "Se actualizó la matriz de turnos del cuadro: " + cuadro.getNombre(),
+                    "SISTEMA"
+            );
+            eventPublisher.publishEvent(evento);
+            log.info("Evento de actualización de matriz publicado para cuadro ID: {}", idCuadro);
+        } catch (Exception e) {
+            log.error("Error al publicar evento de matriz: {}", e.getMessage());
+        }
 
         return obtenerMatrizPorCuadro(idCuadro);
     }

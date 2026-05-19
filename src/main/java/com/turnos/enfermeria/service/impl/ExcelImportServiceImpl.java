@@ -12,7 +12,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
@@ -20,7 +19,6 @@ import java.util.*;
 
 @Slf4j
 @Service
-@Transactional
 @AllArgsConstructor
 public class ExcelImportServiceImpl implements ExcelImportService {
 
@@ -33,6 +31,12 @@ public class ExcelImportServiceImpl implements ExcelImportService {
     public MatrizMensualDTO importarExcel(MultipartFile file, Long idCuadroTurno) throws Exception {
         CuadroTurno cuadro = cuadroTurnoRepository.findById(idCuadroTurno)
                 .orElseThrow(() -> new EntityNotFoundException("CuadroTurno no encontrado: " + idCuadroTurno));
+
+        List<Persona> miembrosEquipo = new ArrayList<>();
+        if (cuadro.getEquipos() != null) {
+            miembrosEquipo = personaRepository.findPersonasByEquipos_IdEquipo(cuadro.getEquipos().getIdEquipo());
+            log.info("Equipo '{}' tiene {} miembros", cuadro.getNombreEquipo(), miembrosEquipo.size());
+        }
 
         Map<String, TipoJornada> codigosJornada = new HashMap<>();
         for (TipoJornada tj : tipoJornadaRepository.findAll()) {
@@ -90,9 +94,9 @@ public class ExcelImportServiceImpl implements ExcelImportService {
 
                 String documento = cedulaCol >= 0 ? getCellValueAsString(row.getCell(cedulaCol)) : null;
 
-                Persona persona = buscarPersona(documento, nombreEmpleado);
+                Persona persona = buscarPersona(documento, nombreEmpleado, miembrosEquipo);
                 if (persona == null) {
-                    log.warn("Persona no encontrada: {}. Se creará registro temporal.", nombreEmpleado);
+                    log.warn("Persona '{}' no encontrada en el equipo '{}'. Se omitirá.", nombreEmpleado, cuadro.getNombreEquipo());
                     continue;
                 }
 
@@ -165,12 +169,17 @@ public class ExcelImportServiceImpl implements ExcelImportService {
         }
     }
 
-    private Persona buscarPersona(String documento, String nombre) {
+    private Persona buscarPersona(String documento, String nombre, List<Persona> miembrosEquipo) {
+        if (miembrosEquipo.isEmpty()) return null;
+
         if (documento != null && !documento.trim().isEmpty()) {
-            Optional<Persona> porDoc = personaRepository.findByDocumento(documento.trim());
+            Optional<Persona> porDoc = miembrosEquipo.stream()
+                    .filter(p -> documento.trim().equals(p.getDocumento()))
+                    .findFirst();
             if (porDoc.isPresent()) return porDoc.get();
         }
-        return personaRepository.findAll().stream()
+
+        return miembrosEquipo.stream()
                 .filter(p -> p.getNombreCompleto() != null &&
                         p.getNombreCompleto().toLowerCase().contains(nombre.toLowerCase().trim()))
                 .findFirst()
