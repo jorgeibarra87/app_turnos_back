@@ -129,6 +129,7 @@ public class ProgramacionDiariaServiceImpl implements ProgramacionDiariaService 
                 cuadro.getIdCuadroTurno(), cuadro.getNombre(),
                 cuadro.getAnio(), cuadro.getMes(),
                 cuadro.getEntidad(), cuadro.getTipoPersonal(),
+                cuadro.getNombreEquipo(),
                 diasDelMes, filas
         );
     }

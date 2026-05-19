@@ -16,6 +16,7 @@ public class MatrizMensualDTO {
     private String mes;
     private String entidad;
     private String tipoPersonal;
+    private String nombreEquipo;
     private int diasDelMes;
     private List<FilaMatriz> filas;
 
